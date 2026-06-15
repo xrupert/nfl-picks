@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* Card surface */
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 font-semibold transition
+           disabled:cursor-not-allowed disabled:opacity-40;
+    min-height: 44px;
+  }
+  .btn-primary {
+    @apply btn bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 active:bg-emerald-700;
+  }
+  .btn-secondary {
+    @apply btn border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-slate-900
+           placeholder-slate-400 outline-none transition
+           focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20;
+    min-height: 44px;
+  }
+}
+
+/* Team icon glow on hover / selected */
+.helmet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+.helmet:hover {
+  transform: translateY(-2px) scale(1.06);
+  filter: drop-shadow(0 0 10px var(--glow, rgba(16, 185, 129, 0.5)));
+}
+.helmet.is-selected {
+  filter: drop-shadow(0 0 9px var(--glow, rgba(16, 185, 129, 0.6)));
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.18);
+}
