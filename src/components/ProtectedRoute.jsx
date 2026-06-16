@@ -1,9 +1,15 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
-// Gate authenticated routes. Redirects to /login when there's no session.
 export default function ProtectedRoute() {
   const session = useAuthStore((s) => s.session);
-  if (!session) return <Navigate to="/login" replace />;
+  const location = useLocation();
+
+  if (!session) {
+    // Preserve the page they were trying to reach so login/signup can redirect back
+    const next = location.pathname + location.search;
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
+  }
+
   return <Outlet />;
 }

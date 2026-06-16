@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
 import AuthCard from '../components/AuthCard';
@@ -7,12 +7,15 @@ import AuthCard from '../components/AuthCard';
 export default function Login() {
   const navigate = useNavigate();
   const session = useAuthStore((s) => s.session);
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get('next') || '/dashboard';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  if (session) return <Navigate to="/dashboard" replace />;
+  if (session) return <Navigate to={next} replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +24,7 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (error) { setError(error.message); return; }
-    navigate('/dashboard');
+    navigate(next, { replace: true });
   };
 
   return (
@@ -61,7 +64,7 @@ export default function Login() {
 
       <p className="mt-4 text-center text-sm text-slate-500">
         No account?{' '}
-        <Link to="/signup" className="font-semibold text-emerald-600 hover:underline">
+        <Link to={`/signup${next !== '/dashboard' ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-semibold text-emerald-600 hover:underline">
           Create one
         </Link>
       </p>

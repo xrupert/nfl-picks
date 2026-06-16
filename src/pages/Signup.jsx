@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import AuthCard from '../components/AuthCard';
 
 export default function Signup() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get('next') || '/dashboard';
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +41,7 @@ export default function Signup() {
     if (error) { setError(error.message); return; }
 
     if (data.session) {
-      navigate('/dashboard');
+      navigate(next, { replace: true });
     } else {
       setNotice('Account created! Check your email to confirm, then sign in.');
     }
