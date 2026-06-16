@@ -246,9 +246,17 @@ export default function LeagueSettings() {
             const pct = Math.round((count / 272) * 100);
             return (
               <li key={m.user_id} className="flex items-center gap-3 rounded-lg p-2.5 hover:bg-slate-50">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">
-                  {m.username[0].toUpperCase()}
-                </div>
+                {m.avatar_url ? (
+                  <img
+                    src={m.avatar_url}
+                    alt={m.username}
+                    className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-slate-200"
+                  />
+                ) : (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 font-bold text-emerald-700">
+                    {m.username[0].toUpperCase()}
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-slate-900">{m.username}</span>

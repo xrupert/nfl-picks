@@ -120,9 +120,17 @@ export default function Leaderboard() {
 
               {/* Avatar + name */}
               <div className="flex min-w-0 flex-1 items-center gap-3">
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold ${isMe ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
-                  {row.username[0].toUpperCase()}
-                </div>
+                {row.avatar_url ? (
+                  <img
+                    src={row.avatar_url}
+                    alt={row.username}
+                    className={`h-10 w-10 shrink-0 rounded-full object-cover ${isMe ? 'ring-2 ring-emerald-400' : 'ring-1 ring-slate-200'}`}
+                  />
+                ) : (
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full font-bold ${isMe ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                    {row.username[0].toUpperCase()}
+                  </div>
+                )}
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="font-semibold text-slate-900">{row.username}</span>

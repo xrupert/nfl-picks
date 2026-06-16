@@ -19,6 +19,7 @@ import PlayoffBracket from './pages/PlayoffBracket';
 import Leaderboard from './pages/Leaderboard';
 import CompareView from './pages/CompareView';
 import LeagueSettings from './pages/LeagueSettings';
+import Profile from './pages/Profile';
 
 export default function App() {
   const initAuth = useAuthStore((s) => s.initAuth);
@@ -50,6 +51,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/create-league" element={<CreateLeague />} />
             <Route path="/join/:inviteCode" element={<JoinLeague />} />
 
