@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-scores",
+      "schedule": "0 10 * * 2,3"
+    },
+    {
+      "path": "/api/cron/sync-playoffs",
+      "schedule": "0 10 * * 2,3"
+    }
+  ]
+}

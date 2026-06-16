@@ -39,9 +39,13 @@ export const useLeagueStore = create((set, get) => ({
   isCommissioner: (userId) => get().league?.commissioner_id === userId,
   isLocked: () => get().league?.pick_lock_status === 'locked',
 
-  // Optimistically mark locked after the commissioner locks.
   setLocked: () =>
     set((s) => ({
       league: s.league ? { ...s.league, pick_lock_status: 'locked', locked_at: new Date().toISOString() } : s.league,
+    })),
+
+  setUnlocked: () =>
+    set((s) => ({
+      league: s.league ? { ...s.league, pick_lock_status: 'open', locked_at: null } : s.league,
     })),
 }));

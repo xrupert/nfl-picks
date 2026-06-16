@@ -43,7 +43,7 @@ export default function LeagueLayout() {
         </div>
       </div>
 
-      <nav className="mt-4 flex gap-1 overflow-x-auto border-b border-slate-200 pb-3">
+      <nav className="mt-4 flex gap-1 overflow-x-auto border-b border-slate-200 pb-3 scrollbar-none [-webkit-overflow-scrolling:touch]">
         <NavLink to={`/league/${leagueId}/picks`} className={tabClass}>
           Picks
         </NavLink>
