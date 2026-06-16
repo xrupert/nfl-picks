@@ -161,20 +161,28 @@ export default function Leaderboard() {
         })}
       </div>
 
-      {seasonStarted && (
-        <div className="card p-4">
-          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Point Values</h3>
-          <div className="flex flex-wrap gap-2 text-xs text-slate-600">
-            <span className="rounded bg-slate-100 px-2 py-1">Regular pick: <b>1pt</b></span>
-            <span className="rounded bg-slate-100 px-2 py-1">Division winner: <b>5pts</b></span>
-            <span className="rounded bg-slate-100 px-2 py-1">Correct seed: <b>2pts</b></span>
-            <span className="rounded bg-blue-50 px-2 py-1">Wild Card: <b>3pts</b></span>
-            <span className="rounded bg-purple-50 px-2 py-1">Divisional: <b>5pts</b></span>
-            <span className="rounded bg-amber-50 px-2 py-1">Conf Champ: <b>8pts</b></span>
-            <span className="rounded bg-emerald-50 px-2 py-1">Super Bowl: <b>15pts</b></span>
+      <div className="card p-4">
+        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">How Points Are Scored</h3>
+        <div className="space-y-2">
+          <div>
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Regular Season</p>
+            <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+              <span className="rounded bg-slate-100 px-2 py-1">Correct game pick <b>1 pt</b></span>
+              <span className="rounded bg-slate-100 px-2 py-1">Division winner <b>5 pts</b></span>
+              <span className="rounded bg-slate-100 px-2 py-1">Correct playoff seed <b>2 pts</b></span>
+            </div>
+          </div>
+          <div>
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Playoffs</p>
+            <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+              <span className="rounded bg-blue-50 px-2 py-1">Wild Card correct <b>3 pts</b></span>
+              <span className="rounded bg-purple-50 px-2 py-1">Divisional correct <b>5 pts</b></span>
+              <span className="rounded bg-amber-50 px-2 py-1">Conf Champ correct <b>8 pts</b></span>
+              <span className="rounded bg-emerald-50 px-2 py-1">Super Bowl correct <b>15 pts</b></span>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

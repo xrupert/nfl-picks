@@ -130,7 +130,7 @@ export default function LeagueSettings() {
     flash('Lock time saved.');
   };
 
-  const inviteUrl = `${window.location.origin}/join?code=${league?.invite_code}`;
+  const inviteUrl = `${window.location.origin}/join/${league?.invite_code}`;
 
   if (!league) return <p className="text-slate-500">Loading…</p>;
 
@@ -212,6 +212,30 @@ export default function LeagueSettings() {
           )}
         </div>
       )}
+
+      {/* Scoring */}
+      <div className="card p-5">
+        <h3 className="font-semibold text-slate-900">How Points Are Scored</h3>
+        <div className="mt-3 space-y-3">
+          <div>
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Regular Season</p>
+            <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+              <span className="rounded bg-slate-100 px-2 py-1">Correct game pick <b>1 pt</b></span>
+              <span className="rounded bg-slate-100 px-2 py-1">Division winner <b>5 pts</b></span>
+              <span className="rounded bg-slate-100 px-2 py-1">Correct playoff seed <b>2 pts</b></span>
+            </div>
+          </div>
+          <div>
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Playoffs</p>
+            <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+              <span className="rounded bg-blue-50 px-2 py-1">Wild Card correct <b>3 pts</b></span>
+              <span className="rounded bg-purple-50 px-2 py-1">Divisional correct <b>5 pts</b></span>
+              <span className="rounded bg-amber-50 px-2 py-1">Conf Champ correct <b>8 pts</b></span>
+              <span className="rounded bg-emerald-50 px-2 py-1">Super Bowl correct <b>15 pts</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Members */}
       <div className="card p-5">
