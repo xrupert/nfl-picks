@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { supabase } from '../lib/supabase';
 
@@ -16,6 +16,11 @@ export default function Profile() {
 
   const userId = session?.user?.id;
 
+  // Sync form when profile loads (profile may not be ready at first render)
+  useEffect(() => {
+    if (profile?.username) setUsername(profile.username);
+  }, [profile?.username]);
+
   const flash = (ok, err) => {
     if (ok) { setSuccessMsg(ok); setErrorMsg(''); setTimeout(() => setSuccessMsg(''), 3000); }
     if (err) { setErrorMsg(err); setSuccessMsg(''); }
@@ -27,13 +32,20 @@ export default function Profile() {
     if (uname.length < 3) { flash(null, 'Username must be at least 3 characters.'); return; }
 
     setSaving(true);
-    const { data: existing } = await supabase
-      .from('profiles').select('id').eq('username', uname).neq('id', userId).maybeSingle();
-    if (existing) { setSaving(false); flash(null, 'That username is already taken.'); return; }
-
-    const { error } = await supabase.from('profiles').update({ username: uname }).eq('id', userId);
+    const res = await fetch('/api/update-profile', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ username: uname }),
+    });
     setSaving(false);
-    if (error) { flash(null, error.message); return; }
+    if (!res.ok) {
+      const { error } = await res.json().catch(() => ({ error: 'Update failed' }));
+      flash(null, error ?? 'Update failed');
+      return;
+    }
     await loadProfile(userId);
     flash('Display name updated!');
   };

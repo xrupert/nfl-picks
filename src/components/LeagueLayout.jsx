@@ -56,11 +56,15 @@ export default function LeagueLayout() {
         <NavLink to={`/league/${leagueId}/leaderboard`} className={tabClass}>
           Leaderboard
         </NavLink>
-        {isCommissioner(userId) && (
-          <NavLink to={`/league/${leagueId}/settings`} className={tabClass}>
-            Settings
-          </NavLink>
-        )}
+        <NavLink to={`/league/${leagueId}/predictions`} className={tabClass}>
+          Predictions
+        </NavLink>
+        <NavLink to={`/league/${leagueId}/chat`} className={tabClass}>
+          Chat
+        </NavLink>
+        <NavLink to={`/league/${leagueId}/settings`} className={tabClass}>
+          Settings
+        </NavLink>
       </nav>
 
       <div className="mt-5">

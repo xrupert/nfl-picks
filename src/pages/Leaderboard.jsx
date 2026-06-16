@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useLeagueStore } from '../store/leagueStore';
+import { useTeamsStore } from '../store/teamsStore';
 import { supabase } from '../lib/supabase';
 
 function Medal({ rank }) {
@@ -28,17 +29,33 @@ export default function Leaderboard() {
   const { leagueId } = useParams();
   const userId = useAuthStore((s) => s.session?.user?.id);
   const members = useLeagueStore((s) => s.members);
+  const teamsById = useTeamsStore((s) => s.byId);
 
   const [scores, setScores] = useState([]);
   const [pickCounts, setPickCounts] = useState({});
+  const [sbPicks, setSbPicks] = useState({});
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     setLoading(true);
-    const [{ data: sc }, { data: picks }] = await Promise.all([
+    const [{ data: sc }, { data: picks }, { data: bracketRows }] = await Promise.all([
       supabase.from('scoring').select('*').eq('league_id', leagueId),
       supabase.from('user_picks_regular').select('user_id').eq('league_id', leagueId),
+      supabase.from('playoff_bracket').select('id, user_id').eq('league_id', leagueId).eq('round', 'Super Bowl'),
     ]);
+
+    // Super Bowl picks
+    const sbIds = (bracketRows ?? []).map((r) => r.id);
+    if (sbIds.length) {
+      const { data: ppicks } = await supabase
+        .from('user_picks_playoff')
+        .select('user_id, picked_winner_id')
+        .eq('league_id', leagueId)
+        .in('playoff_game_id', sbIds);
+      const map = {};
+      for (const p of ppicks ?? []) if (p.picked_winner_id) map[p.user_id] = p.picked_winner_id;
+      setSbPicks(map);
+    }
 
     const counts = {};
     for (const p of picks ?? []) counts[p.user_id] = (counts[p.user_id] ?? 0) + 1;
@@ -144,6 +161,11 @@ export default function Leaderboard() {
                   {seasonStarted && (
                     <p className="text-xs text-slate-400">
                       {row.regular_correct}/{row.regular_total} correct · {acc} accuracy
+                    </p>
+                  )}
+                  {sbPicks[row.user_id] && teamsById[sbPicks[row.user_id]] && (
+                    <p className="text-xs font-semibold text-amber-600">
+                      🏆 {teamsById[sbPicks[row.user_id]].abbreviation}
                     </p>
                   )}
                 </div>

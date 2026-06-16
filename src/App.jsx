@@ -19,6 +19,8 @@ import PlayoffBracket from './pages/PlayoffBracket';
 import Leaderboard from './pages/Leaderboard';
 import CompareView from './pages/CompareView';
 import LeagueSettings from './pages/LeagueSettings';
+import Predictions from './pages/Predictions';
+import Chat from './pages/Chat';
 import Profile from './pages/Profile';
 
 export default function App() {
@@ -63,6 +65,8 @@ export default function App() {
               <Route path="playoffs" element={<PlayoffBracket />} />
               <Route path="leaderboard" element={<Leaderboard />} />
               <Route path="compare/:compareUserId" element={<CompareView />} />
+              <Route path="predictions" element={<Predictions />} />
+              <Route path="chat" element={<Chat />} />
               <Route path="settings" element={<LeagueSettings />} />
             </Route>
           </Route>
