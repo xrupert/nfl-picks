@@ -45,22 +45,32 @@ export default function Profile() {
 
     setUploading(true);
     const ext = file.name.split('.').pop().toLowerCase();
-    const path = `${userId}/avatar.${ext}`;
 
-    const { error: upErr } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true, contentType: file.type });
+    // Convert to base64 and send to server-side endpoint (uses service role key, bypasses storage RLS)
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
 
-    if (upErr) { setUploading(false); flash(null, upErr.message); return; }
-
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
-    const urlWithBust = `${publicUrl}?t=${Date.now()}`;
-
-    const { error: dbErr } = await supabase.from('profiles')
-      .update({ avatar_url: urlWithBust }).eq('id', userId);
+    const token = session?.access_token;
+    const res = await fetch('/api/upload-avatar', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ base64, contentType: file.type, ext }),
+    });
 
     setUploading(false);
-    if (dbErr) { flash(null, dbErr.message); return; }
+    if (!res.ok) {
+      const { error } = await res.json().catch(() => ({ error: 'Upload failed' }));
+      flash(null, error ?? 'Upload failed');
+      return;
+    }
+
     await loadProfile(userId);
     flash('Profile photo updated!');
   };
