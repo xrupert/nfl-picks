@@ -51,7 +51,7 @@ export async function fetchMyLeagues(userId) {
 export async function createLeague({ name, seasonYear, userId }) {
   const { data: league, error } = await supabase
     .from('leagues')
-    .insert({ name, season_year: seasonYear, commissioner_id: userId })
+    .insert({ name, season_year: seasonYear, commissioner_id: userId, max_members: 20 })
     .select()
     .single();
   if (error) throw error;

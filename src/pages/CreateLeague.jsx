@@ -10,7 +10,7 @@ export default function CreateLeague() {
   const [seasonYear, setSeasonYear] = useState(2026);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
-  const [created, setCreated] = useState(null); // the new league (shows invite code)
+  const [created, setCreated] = useState(null);
   const [copied, setCopied] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -40,8 +40,8 @@ export default function CreateLeague() {
       <div className="mx-auto max-w-lg">
         <div className="card p-6 text-center">
           <div className="text-3xl">🎉</div>
-          <h1 className="mt-2 text-2xl font-extrabold">{created.name} is live!</h1>
-          <p className="mt-1 text-white/50">Share this invite link with up to 5 friends.</p>
+          <h1 className="mt-2 text-2xl font-extrabold text-slate-900">{created.name} is live!</h1>
+          <p className="mt-1 text-slate-500">Share this invite link with your league members.</p>
 
           <div className="mt-5 flex items-center gap-2">
             <input readOnly value={inviteUrl} className="input font-mono text-sm" />
@@ -49,8 +49,8 @@ export default function CreateLeague() {
               {copied ? 'Copied!' : 'Copy'}
             </button>
           </div>
-          <p className="mt-2 text-xs text-white/40">
-            Invite code: <span className="font-mono text-white/70">{created.invite_code}</span>
+          <p className="mt-2 text-xs text-slate-400">
+            Invite code: <span className="font-mono font-semibold text-slate-600">{created.invite_code}</span>
           </p>
 
           <button
@@ -66,9 +66,9 @@ export default function CreateLeague() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="text-2xl font-extrabold">Create a League</h1>
+      <h1 className="text-2xl font-extrabold text-slate-900">Create a League</h1>
       <form onSubmit={handleSubmit} className="card mt-5 flex flex-col gap-4 p-6">
-        <label className="text-sm text-white/70">
+        <label className="text-sm font-medium text-slate-700">
           League name
           <input
             required
@@ -78,7 +78,7 @@ export default function CreateLeague() {
             placeholder="The Couch Coaches"
           />
         </label>
-        <label className="text-sm text-white/70">
+        <label className="text-sm font-medium text-slate-700">
           Season year
           <input
             type="number"
@@ -90,7 +90,7 @@ export default function CreateLeague() {
           />
         </label>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-red-500">{error}</p>}
 
         <button type="submit" disabled={busy || !name.trim()} className="btn-primary">
           {busy ? 'Creating…' : 'Create League'}
