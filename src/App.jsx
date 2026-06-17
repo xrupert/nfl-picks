@@ -47,6 +47,7 @@ export default function App() {
         {/* Public */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/join/:inviteCode" element={<JoinLeague />} />
         <Route path="/dev/helmets" element={<HelmetShowcase />} />
 
         {/* Authenticated */}
@@ -55,7 +56,6 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/create-league" element={<CreateLeague />} />
-            <Route path="/join/:inviteCode" element={<JoinLeague />} />
 
             {/* League sub-pages */}
             <Route path="/league/:leagueId" element={<LeagueLayout />}>
