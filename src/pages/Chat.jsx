@@ -14,8 +14,6 @@ function timeAgo(ts) {
   return new Date(ts).toLocaleDateString();
 }
 
-let msgCounter = 0;
-
 export default function Chat() {
   const { leagueId } = useParams();
   const profile = useAuthStore((s) => s.profile);
@@ -26,26 +24,22 @@ export default function Chat() {
   const [text, setText] = useState('');
   const [connected, setConnected] = useState(false);
   const [chatHeight, setChatHeight] = useState(null);
-  const channelRef = useRef(null);
-  const bottomRef = useRef(null);
   const containerRef = useRef(null);
+  const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  // Always-current memberMap for use inside subscription callbacks
+  const memberMapRef = useRef({});
+  memberMapRef.current = Object.fromEntries(members.map((m) => [m.user_id, m]));
 
-  const memberMap = Object.fromEntries(members.map((m) => [m.user_id, m]));
-
-  // Visual viewport API keeps the input above the keyboard on mobile.
-  // When the keyboard opens, visualViewport.height shrinks; we recalculate
-  // the container height so nothing gets buried behind the keyboard.
+  // Visual viewport API: keep input above keyboard on mobile
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-
     const update = () => {
       if (!containerRef.current) return;
       const top = containerRef.current.getBoundingClientRect().top;
       setChatHeight(Math.max(320, vv.height - top - 12));
     };
-
     vv.addEventListener('resize', update);
     vv.addEventListener('scroll', update);
     update();
@@ -55,22 +49,61 @@ export default function Chat() {
     };
   }, []);
 
+  // Load history then subscribe to new messages
   useEffect(() => {
     if (!leagueId || !userId) return;
 
-    const channel = supabase.channel(`smack-${leagueId}`, {
-      config: { broadcast: { self: true } },
-    });
+    // Load last 100 messages with profile info
+    supabase
+      .from('league_messages')
+      .select('id, user_id, content, created_at, profiles(username, avatar_url)')
+      .eq('league_id', leagueId)
+      .order('created_at', { ascending: true })
+      .limit(100)
+      .then(({ data }) => {
+        if (data) {
+          setMessages(
+            data.map((m) => ({
+              id: m.id,
+              user_id: m.user_id,
+              username: m.profiles?.username ?? null,
+              avatar_url: m.profiles?.avatar_url ?? null,
+              content: m.content,
+              created_at: m.created_at,
+            }))
+          );
+        }
+      });
 
-    channel
-      .on('broadcast', { event: 'message' }, ({ payload }) => {
-        setMessages((prev) => [...prev, payload]);
-      })
+    // Real-time: other users' inserts arrive here
+    const channel = supabase
+      .channel(`league-chat-realtime-${leagueId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'league_messages', filter: `league_id=eq.${leagueId}` },
+        ({ new: row }) => {
+          const member = memberMapRef.current[row.user_id];
+          setMessages((prev) => {
+            // Skip if we already have this row (optimistic message was given the real id)
+            if (prev.some((m) => m.id === row.id)) return prev;
+            return [
+              ...prev,
+              {
+                id: row.id,
+                user_id: row.user_id,
+                username: member?.username ?? null,
+                avatar_url: member?.avatar_url ?? null,
+                content: row.content,
+                created_at: row.created_at,
+              },
+            ];
+          });
+        }
+      )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') setConnected(true);
       });
 
-    channelRef.current = channel;
     return () => {
       supabase.removeChannel(channel);
       setConnected(false);
@@ -83,33 +116,46 @@ export default function Chat() {
 
   const handleSend = useCallback(async () => {
     const content = text.trim();
-    if (!content || !channelRef.current || !connected) return;
+    if (!content || !connected) return;
 
-    const msg = {
-      id: `${Date.now()}-${++msgCounter}`,
-      user_id: userId,
-      username: profile?.username ?? 'You',
-      avatar_url: profile?.avatar_url ?? null,
-      content,
-      created_at: new Date().toISOString(),
-    };
-
-    await channelRef.current.send({
-      type: 'broadcast',
-      event: 'message',
-      payload: msg,
-    });
-
+    // Clear input immediately — feels instant
     setText('');
     inputRef.current?.focus();
-  }, [text, connected, userId, profile]);
+
+    // Show optimistic message right away
+    const optimisticId = `opt-${Date.now()}`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: optimisticId,
+        user_id: userId,
+        username: profile?.username ?? 'You',
+        avatar_url: profile?.avatar_url ?? null,
+        content,
+        created_at: new Date().toISOString(),
+      },
+    ]);
+
+    // Persist to DB — postgres_changes broadcasts it to everyone else
+    const { data, error } = await supabase
+      .from('league_messages')
+      .insert({ league_id: leagueId, user_id: userId, content })
+      .select('id')
+      .single();
+
+    if (!error && data) {
+      // Swap the optimistic id for the real DB uuid
+      setMessages((prev) =>
+        prev.map((m) => (m.id === optimisticId ? { ...m, id: data.id } : m))
+      );
+    }
+  }, [text, connected, userId, profile, leagueId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     handleSend();
   };
 
-  // Enter sends; Shift+Enter or any other key combo does nothing special
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -127,11 +173,11 @@ export default function Chat() {
       <div className="mb-2 flex items-center gap-2">
         <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
         <span className="text-xs text-slate-500">
-          {connected ? 'Live — messages appear in real time' : 'Connecting…'}
+          {connected ? 'Live · history saved' : 'Connecting…'}
         </span>
       </div>
 
-      {/* Messages scroll area */}
+      {/* Message list */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1">
         {messages.length === 0 && connected && (
           <p className="mt-12 text-center text-sm text-slate-400">
@@ -140,14 +186,13 @@ export default function Chat() {
         )}
 
         {messages.map((msg) => {
-          const sender = memberMap[msg.user_id];
+          const sender = memberMapRef.current[msg.user_id];
           const isMe = msg.user_id === userId;
           const name = msg.username ?? sender?.username ?? 'Unknown';
           const avatar = msg.avatar_url ?? sender?.avatar_url;
 
           return (
             <div key={msg.id} className={`flex items-end gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
-              {/* Avatar */}
               <div className="shrink-0">
                 {avatar ? (
                   <img src={avatar} alt={name} className="h-8 w-8 rounded-full object-cover" />
@@ -157,8 +202,6 @@ export default function Chat() {
                   </div>
                 )}
               </div>
-
-              {/* Bubble */}
               <div className={`flex max-w-[78%] flex-col gap-0.5 ${isMe ? 'items-end' : 'items-start'}`}>
                 {!isMe && (
                   <span className="px-1 text-[11px] font-semibold text-slate-500">{name}</span>
@@ -174,7 +217,7 @@ export default function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input bar — safe-area-inset-bottom handles iPhone home bar */}
+      {/* Input — safe-area-inset-bottom for iPhone home bar */}
       <form
         onSubmit={handleSubmit}
         className="mt-3 flex gap-2 border-t border-slate-200 pt-3"
