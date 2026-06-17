@@ -1,9 +1,37 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { fetchMyLeagues } from '../lib/leagues';
 
 const TOTAL_GAMES = 272;
+
+function JoinByCode() {
+  const navigate = useNavigate();
+  const [code, setCode] = useState('');
+
+  const handleJoin = (e) => {
+    e.preventDefault();
+    const trimmed = code.trim();
+    if (trimmed) navigate(`/join/${trimmed}`);
+  };
+
+  return (
+    <form onSubmit={handleJoin} className="flex gap-2">
+      <input
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        placeholder="Enter invite code"
+        className="input flex-1"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+      />
+      <button type="submit" disabled={!code.trim()} className="btn-primary shrink-0">
+        Join
+      </button>
+    </form>
+  );
+}
 
 export default function Dashboard() {
   const session = useAuthStore((s) => s.session);
@@ -36,14 +64,23 @@ export default function Dashboard() {
       {error && <p className="mt-8 text-red-500">{error}</p>}
 
       {!loading && !error && leagues.length === 0 && (
-        <div className="card mt-8 p-8 text-center">
-          <p className="text-lg font-semibold text-slate-900">No leagues yet</p>
-          <p className="mt-1 text-slate-500">
-            Create a league and invite friends, or join one with an invite code.
-          </p>
-          <Link to="/create-league" className="btn-primary mt-4 inline-flex">
-            Create your first league
-          </Link>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {/* Join with code — shown first since most new users are joining, not creating */}
+          <div className="card p-6">
+            <p className="text-lg font-bold text-slate-900">Have an invite code?</p>
+            <p className="mt-1 text-sm text-slate-500">Enter the code your league commissioner sent you.</p>
+            <div className="mt-4">
+              <JoinByCode />
+            </div>
+          </div>
+
+          <div className="card p-6">
+            <p className="text-lg font-bold text-slate-900">Start a new league</p>
+            <p className="mt-1 text-sm text-slate-500">Create a league and invite your friends.</p>
+            <Link to="/create-league" className="btn-primary mt-4 inline-flex">
+              Create a league
+            </Link>
+          </div>
         </div>
       )}
 
@@ -62,9 +99,7 @@ export default function Dashboard() {
                 </div>
                 <span
                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    locked
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-emerald-100 text-emerald-700'
+                    locked ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
                   }`}
                 >
                   {locked ? 'Locked' : 'Open'}
@@ -73,14 +108,11 @@ export default function Dashboard() {
 
               <div className="mt-4 flex items-center justify-between text-sm">
                 <span className="text-slate-500">
-                  Picks:{' '}
-                  <span className="font-semibold text-slate-900">{l.picksMade}</span>
-                  /{TOTAL_GAMES}
+                  Picks: <span className="font-semibold text-slate-900">{l.picksMade}</span>/{TOTAL_GAMES}
                 </span>
                 {l.score && (
                   <span className="text-slate-500">
-                    Score:{' '}
-                    <span className="font-bold text-emerald-600">{l.score.total_points}</span>
+                    Score: <span className="font-bold text-emerald-600">{l.score.total_points}</span>
                   </span>
                 )}
               </div>
@@ -113,10 +145,11 @@ export default function Dashboard() {
       </div>
 
       {!loading && leagues.length > 0 && (
-        <div className="mt-4 text-center">
-          <Link to="/join-league" className="text-sm text-slate-500 hover:text-emerald-600 hover:underline">
-            Have an invite code? Join a league →
-          </Link>
+        <div className="card mt-6 p-5">
+          <p className="text-sm font-semibold text-slate-700">Join another league</p>
+          <div className="mt-3">
+            <JoinByCode />
+          </div>
         </div>
       )}
     </div>
